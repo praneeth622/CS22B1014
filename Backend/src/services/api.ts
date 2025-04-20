@@ -29,13 +29,13 @@ interface TopUser {
 
 interface RawData {
   users: User;
-  posts: Record<string, Post[]>;  // userId -> posts
-  comments: Record<number, Comment[]>;  // postId -> comments
+  posts: Record<string, Post[]>; 
+  comments: Record<number, Comment[]>;  
   timestamp: number;
 }
 
 // Authentication token
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzQ1MTM2MzU1LCJpYXQiOjE3NDUxMzYwNTUsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6ImJiNTBlNGYyLWY2ZjktNDdhYS05NjY4LTA2YWNkZGQ2YTI4NyIsInN1YiI6InByYW5lZXRoZGV2YXJhc2V0dHkzMUBnbWFpbC5jb20ifSwiZW1haWwiOiJwcmFuZWV0aGRldmFyYXNldHR5MzFAZ21haWwuY29tIiwibmFtZSI6InByYW5lZXRoIGRldmFyYXNldHR5Iiwicm9sbE5vIjoiY3MyMmIxMDE0IiwiYWNjZXNzQ29kZSI6IndjSEhycCIsImNsaWVudElEIjoiYmI1MGU0ZjItZjZmOS00N2FhLTk2NjgtMDZhY2RkZDZhMjg3IiwiY2xpZW50U2VjcmV0IjoiTkJXbU5RZGVaWFJHemRWdyJ9.AekTPaC3PxtlyGKZa0jULsLYWEm3kKPyv3LqABl7GOE";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzQ1MTM2NjQzLCJpYXQiOjE3NDUxMzYzNDMsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6ImJiNTBlNGYyLWY2ZjktNDdhYS05NjY4LTA2YWNkZGQ2YTI4NyIsInN1YiI6InByYW5lZXRoZGV2YXJhc2V0dHkzMUBnbWFpbC5jb20ifSwiZW1haWwiOiJwcmFuZWV0aGRldmFyYXNldHR5MzFAZ21haWwuY29tIiwibmFtZSI6InByYW5lZXRoIGRldmFyYXNldHR5Iiwicm9sbE5vIjoiY3MyMmIxMDE0IiwiYWNjZXNzQ29kZSI6IndjSEhycCIsImNsaWVudElEIjoiYmI1MGU0ZjItZjZmOS00N2FhLTk2NjgtMDZhY2RkZDZhMjg3IiwiY2xpZW50U2VjcmV0IjoiTkJXbU5RZGVaWFJHemRWdyJ9.qKNJe3JUAzjmoSzL27D9u18SHqb0kewVCJwqLWR7BYU";
 
 // File path for storing raw data
 const DATA_FILE_PATH = path.join(__dirname, '../../data/raw_data.json');
@@ -140,13 +140,24 @@ export const fetchAndStoreAllData = async (): Promise<boolean> => {
     // 2. Get all posts for each user (second set of API calls)
     console.log("Fetching posts for all users...");
     
-    // To reduce load, process users sequentially with delays
-    for (const userId of Object.keys(users)) {
+    // To reduce load, only process the first 5 users
+    const MAX_USERS = 5;
+    const userIds = Object.keys(users).slice(0, MAX_USERS);
+    
+    console.log(`Processing posts for ${userIds.length} users out of ${Object.keys(users).length}`);
+    
+    // Process users sequentially with delays
+    for (const userId of userIds) {
       try {
         const postsResponse = await api.get(`/users/${userId}/posts`);
         const userPosts: Post[] = postsResponse.data.posts || [];
-        rawData.posts[userId] = userPosts;
-        console.log(`Fetched ${userPosts.length} posts for user ${userId}`);
+        
+        // Limit the number of posts per user to reduce API calls
+        const MAX_POSTS_PER_USER = 3;
+        const limitedPosts = userPosts.slice(0, MAX_POSTS_PER_USER);
+        
+        rawData.posts[userId] = limitedPosts;
+        console.log(`Fetched and limited to ${limitedPosts.length} posts for user ${userId}`);
         
         // Add a small delay between user requests
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -161,6 +172,7 @@ export const fetchAndStoreAllData = async (): Promise<boolean> => {
     
     // Get all posts across all users
     const allPosts: Post[] = Object.values(rawData.posts).flat();
+    console.log(`Processing comments for ${allPosts.length} posts total`);
     
     // Process posts in small batches
     const BATCH_SIZE = 5;
@@ -187,6 +199,13 @@ export const fetchAndStoreAllData = async (): Promise<boolean> => {
       if (i + BATCH_SIZE < allPosts.length) {
         console.log(`Waiting before processing next batch of posts...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    // For users we didn't process, add empty post arrays
+    for (const userId of Object.keys(users)) {
+      if (!rawData.posts[userId]) {
+        rawData.posts[userId] = [];
       }
     }
     

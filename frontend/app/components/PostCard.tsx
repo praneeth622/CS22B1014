@@ -18,16 +18,16 @@ export default function PostCard({ post, type = 'latest' }: PostCardProps) {
     <Link href={`/post/${post.id}`}>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow cursor-pointer">
         <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-          {truncateText(post.title, 60)}
+          Post #{post.id}
         </h3>
         
         <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          {truncateText(post.body, 120)}
+          {truncateText(post.content, 120)}
         </div>
         
         <div className="mt-4 flex justify-between items-center">
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            {post.author?.name ? `By ${post.author.name}` : 'Unknown author'}
+            User ID: {post.userid}
           </div>
           
           {type === 'popular' && post.commentCount !== undefined && (

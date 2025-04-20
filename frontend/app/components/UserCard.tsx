@@ -26,10 +26,10 @@ export default function UserCard({ user }: UserCardProps) {
       </div>
       <div>
         <h3 className="font-semibold text-gray-900 dark:text-white">{user.name}</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">@{user.username}</p>
-        {user.engagementScore !== undefined && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">ID: {user.id}</p>
+        {user.commentCount !== undefined && (
           <div className="mt-1 text-xs text-blue-600 dark:text-blue-400">
-            Engagement: {user.engagementScore.toFixed(1)}
+            Comments: {user.commentCount}
           </div>
         )}
       </div>

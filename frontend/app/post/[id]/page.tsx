@@ -78,16 +78,14 @@ export default function PostDetail() {
         ) : post ? (
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{post.title}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Post #{post.id}</h2>
               
-              {post.author && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                  By {post.author.name}
-                </p>
-              )}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                User ID: {post.userid}
+              </p>
               
               <div className="prose dark:prose-invert max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{post.body}</p>
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{post.content}</p>
               </div>
               
               {post.commentCount !== undefined && (

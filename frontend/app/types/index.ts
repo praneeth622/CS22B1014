@@ -1,19 +1,18 @@
 export interface User {
-  id: number;
+  id: string;
   name: string;
-  username: string;
-  email: string;
-  engagementScore?: number;
+  commentCount: number;
+  username?: string;
+  email?: string;
   avatar?: string;
 }
 
 export interface Post {
   id: number;
-  userId: number;
-  title: string;
-  body: string;
-  author?: User;
+  userid: number;
+  content: string;
   commentCount?: number;
+  author?: User;
 }
 
 export interface Comment {
@@ -22,6 +21,14 @@ export interface Comment {
   name: string;
   email: string;
   body: string;
+}
+
+export interface TopUsersResponse {
+  topUsers: User[];
+}
+
+export interface PostsResponse {
+  posts: Post[];
 }
 
 export interface ApiResponse<T> {
