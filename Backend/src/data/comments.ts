@@ -1,17 +1,30 @@
-import { api } from "../services/api";
+import { api, getCachedCommentsByPost } from "../services/api";
 import cache from "../services/cache";
 
-export const getCommentsByPost = async (postId: number) => {
-  const cacheKey = `comments_${postId}`;
-  const cachedData = cache.get(cacheKey);
-  
-  if (cachedData) {
-    return cachedData;
+interface Comment {
+  id: number;
+  postid: number;
+  content: string;
+}
+
+export const getCommentsByPost = async (postId: number): Promise<Comment[]> => {
+  // First check if we have it in cache
+  const cachedComments = getCachedCommentsByPost(postId);
+  if (cachedComments) {
+    return cachedComments;
   }
   
-  const res = await api.get(`/posts/${postId}/comments`);
-  const comments = res.data.comments || [];
-  
-  cache.set(cacheKey, comments);
-  return comments;
+  // If not in cache, fetch from API
+  try {
+    const res = await api.get(`/posts/${postId}/comments`);
+    const comments = Array.isArray(res.data) ? res.data : [];
+    
+    // Cache for future use
+    cache.set(`comments_post_${postId}`, comments);
+    
+    return comments;
+  } catch (error) {
+    console.error(`Error fetching comments for post ${postId}:`, error);
+    return [];
+  }
 };

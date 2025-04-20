@@ -1,17 +1,30 @@
-import { api } from "../services/api";
+import { api, getCachedPostsByUser } from "../services/api";
 import cache from "../services/cache";
 
-export const getPostsByUser = async (userId: string) => {
-  const cacheKey = `posts_${userId}`;
-  const cachedData = cache.get(cacheKey);
-  
-  if (cachedData) {
-    return cachedData;
+interface Post {
+  id: number;
+  userid: number | string;
+  content: string;
+}
+
+export const getPostsByUser = async (userId: string): Promise<Post[]> => {
+  // First check if we have it in cache
+  const cachedPosts = getCachedPostsByUser(userId);
+  if (cachedPosts) {
+    return cachedPosts;
   }
   
-  const res = await api.get(`/users/${userId}/posts`);
-  const posts = res.data.posts || [];
-  
-  cache.set(cacheKey, posts);
-  return posts;
+  // If not in cache, fetch from API
+  try {
+    const res = await api.get(`/users/${userId}/posts`);
+    const posts: Post[] = res.data.posts || [];
+    
+    // Cache for future use
+    cache.set(`posts_user_${userId}`, posts);
+    
+    return posts;
+  } catch (error) {
+    console.error(`Error fetching posts for user ${userId}:`, error);
+    return [];
+  }
 };

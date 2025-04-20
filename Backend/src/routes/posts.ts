@@ -3,6 +3,7 @@ import { getUsers } from "../data/users";
 import { getPostsByUser } from "../data/posts";
 import { getCommentsByPost } from "../data/comments";
 import cache from "../services/cache";
+import { getCachedLatestPosts, getCachedPopularPosts } from "../services/api";
 
 interface Post {
   id: number;
@@ -21,7 +22,20 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    // Check if we have cached data for this type
+    // Check if we have pre-computed data
+    if (type === "latest") {
+      const cachedLatestPosts = getCachedLatestPosts();
+      if (cachedLatestPosts) {
+        return res.json({ posts: cachedLatestPosts });
+      }
+    } else if (type === "popular") {
+      const cachedPopularPosts = getCachedPopularPosts();
+      if (cachedPopularPosts) {
+        return res.json({ posts: cachedPopularPosts });
+      }
+    }
+    
+    // Check if we have it in route cache
     const cacheKey = `posts_${type}`;
     const cachedPosts = cache.get(cacheKey);
     
@@ -36,7 +50,9 @@ router.get("/", async (req, res) => {
     await Promise.all(
       Object.keys(users).map(async (userId) => {
         const posts = await getPostsByUser(userId);
-        allPosts.push(...posts);
+        if (Array.isArray(posts)) {
+          allPosts.push(...posts);
+        }
       })
     );
 
@@ -54,18 +70,16 @@ router.get("/", async (req, res) => {
           const comments = await getCommentsByPost(post.id);
           return {
             ...post,
-            commentCount: comments.length,
+            commentCount: Array.isArray(comments) ? comments.length : 0,
           };
         })
       );
 
       // Sort by comment count in descending order
-      result = postsWithComments
-        .sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0))
-        .filter((post, index, self) => 
-          // Only include posts with the highest comment count
-          index === 0 || post.commentCount === self[0].commentCount
-        );
+      postsWithComments.sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
+      const maxComments = postsWithComments[0]?.commentCount || 0;
+      
+      result = postsWithComments.filter(post => post.commentCount === maxComments);
     }
 
     // Cache the results
@@ -78,4 +92,4 @@ router.get("/", async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

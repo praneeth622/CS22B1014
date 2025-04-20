@@ -1,17 +1,24 @@
-import { api } from "../services/api";
+import { api, getCachedUsers } from "../services/api";
 import cache from "../services/cache";
 
 export const getUsers = async () => {
-  const cacheKey = "users";
-  const cachedData = cache.get(cacheKey);
-  
-  if (cachedData) {
-    return cachedData;
+  // First check if we have it in cache
+  const cachedUsers = getCachedUsers();
+  if (cachedUsers) {
+    return cachedUsers;
   }
   
-  const res = await api.get("/users");
-  const users = res.data.users;
-  
-  cache.set(cacheKey, users);
-  return users;
+  // If not in cache, fetch from API
+  try {
+    const res = await api.get("/users");
+    const users = res.data.users;
+    
+    // Cache for future use
+    cache.set('all_users', users);
+    
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
 };
