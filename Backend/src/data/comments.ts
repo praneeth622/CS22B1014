@@ -17,7 +17,8 @@ export const getCommentsByPost = async (postId: number): Promise<Comment[]> => {
   // If not in cache, fetch from API
   try {
     const res = await api.get(`/posts/${postId}/comments`);
-    const comments = Array.isArray(res.data) ? res.data : [];
+    // API returns array directly, not {comments: [...]}
+    const comments: Comment[] = Array.isArray(res.data) ? res.data : [];
     
     // Cache for future use
     cache.set(`comments_post_${postId}`, comments);
@@ -25,6 +26,6 @@ export const getCommentsByPost = async (postId: number): Promise<Comment[]> => {
     return comments;
   } catch (error) {
     console.error(`Error fetching comments for post ${postId}:`, error);
-    return [];
+    return []; // Return empty array instead of failing
   }
 };

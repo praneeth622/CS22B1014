@@ -1,8 +1,4 @@
 import express from "express";
-import { getUsers } from "../data/users";
-import { getPostsByUser } from "../data/posts";
-import { getCommentsByPost } from "../data/comments";
-import cache from "../services/cache";
 import { getCachedLatestPosts, getCachedPopularPosts } from "../services/api";
 
 interface Post {
@@ -22,7 +18,7 @@ router.get("/", async (req, res) => {
   }
 
   try {
-    // Check if we have pre-computed data
+    // Only use pre-computed posts from cache
     if (type === "latest") {
       const cachedLatestPosts = getCachedLatestPosts();
       if (cachedLatestPosts) {
@@ -35,57 +31,12 @@ router.get("/", async (req, res) => {
       }
     }
     
-    // Check if we have it in route cache
-    const cacheKey = `posts_${type}`;
-    const cachedPosts = cache.get(cacheKey);
+    // If not in cache, return a friendly message rather than doing computation
+    return res.status(503).json({ 
+      error: "Data is still being loaded. Please try again in a moment.",
+      message: "The server is still initializing the data cache. This happens only once after server start."
+    });
     
-    if (cachedPosts) {
-      return res.json({ posts: cachedPosts });
-    }
-
-    // If not cached, fetch all posts
-    const users = await getUsers();
-    let allPosts: Post[] = [];
-
-    await Promise.all(
-      Object.keys(users).map(async (userId) => {
-        const posts = await getPostsByUser(userId);
-        if (Array.isArray(posts)) {
-          allPosts.push(...posts);
-        }
-      })
-    );
-
-    let result: Post[] = [];
-
-    if (type === "latest") {
-      // Sort by post ID (assuming higher IDs are more recent)
-      result = allPosts
-        .sort((a, b) => b.id - a.id)
-        .slice(0, 5);
-    } else if (type === "popular") {
-      // Get comment counts for all posts
-      const postsWithComments: Post[] = await Promise.all(
-        allPosts.map(async (post) => {
-          const comments = await getCommentsByPost(post.id);
-          return {
-            ...post,
-            commentCount: Array.isArray(comments) ? comments.length : 0,
-          };
-        })
-      );
-
-      // Sort by comment count in descending order
-      postsWithComments.sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
-      const maxComments = postsWithComments[0]?.commentCount || 0;
-      
-      result = postsWithComments.filter(post => post.commentCount === maxComments);
-    }
-
-    // Cache the results
-    cache.set(cacheKey, result);
-    
-    return res.json({ posts: result });
   } catch (err) {
     console.error("Error fetching posts:", err);
     res.status(500).json({ error: "Failed to fetch posts." });

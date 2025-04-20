@@ -1,5 +1,5 @@
 import app from './app';
-import { preloadAllData } from './services/api';
+import { fetchAndStoreAllData } from './services/api';
 
 const PORT = process.env.PORT || 3001;
 
@@ -8,18 +8,18 @@ const server = app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   
   try {
-    // Preload all data
-    console.log("Preloading all data from the evaluation service...");
-    const success = await preloadAllData();
+    // Fetch and store all data once at startup
+    console.log("Loading data from the evaluation service...");
+    const success = await fetchAndStoreAllData();
     
     if (success) {
-      console.log("✅ Data preloading complete. Server is ready!");
+      console.log("✅ Data loading complete. Server is ready!");
     } else {
-      console.log("⚠️ Data preloading had some issues. Server will fall back to on-demand fetching.");
+      console.log("⚠️ Data loading had some issues. API responses may be incomplete.");
     }
   } catch (error) {
-    console.error("Failed to preload data:", error);
-    console.log("⚠️ Server will fall back to on-demand fetching.");
+    console.error("Failed to load data:", error);
+    console.log("⚠️ Server will attempt to use cached data if available.");
   }
 });
 
