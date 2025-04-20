@@ -10,6 +10,10 @@ This backend service:
 - Provides RESTful endpoints for data access
 - Uses TypeScript for type safety
 
+### Architecture Diagram
+
+![Backend data stored in cache screenshot](Backend/image.png)
+
 ## Project Structure
 
 ```

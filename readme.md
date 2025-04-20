@@ -2,6 +2,17 @@
 
 A modern full-stack application that aggregates social media content with real-time updates, built using Next.js and Express.js.
 
+## Due to the API being overloaded, we had to wait for a long time, but eventually, I was able to achieve a fully functional backend by caching the data sent from the test server. This allowed me to display the data on the frontend. Since I spent only about 40 minutes on the frontend, I wasn’t able to create an ideal UI.
+
+## I want to clarify that I have achieved a fully functional backend. However, I forgot to take screenshots of the backend (Postman screen) that show the data being populated in the frontend. You can find more details in the README file located in the frontend folder.
+
+## Project Overview
+
+This project consists of two main components:       
+
+- **Frontend**: A Next.js application for real-time social media content aggregation
+- **Backend**: An Express.js service that aggregates and caches social media data from an evaluation service
+
 ## Key Features
 
 - 📱 **Real-time Content Updates**: Live feed updates using React Query
