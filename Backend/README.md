@@ -1,105 +1,112 @@
-# Social Media Aggregator
+# Social Media Aggregator Backend
 
-A modern full-stack application that aggregates social media content with real-time updates, built using Next.js and Express.js.
+Express.js-based backend service that aggregates and caches social media data from an evaluation service.
 
-🌐 **Live Demo**: [https://social-media-aggregator.vercel.app](https://social-media-aggregator.vercel.app)
+## Project Overview
 
-![Dashboard Screenshot](public/screenshots/dashboard.png)
-
-## Key Features
-
-- 📱 **Real-time Content Updates**: Live feed updates using React Query
-- 🎨 **Modern UI/UX**: Clean interface with Tailwind CSS
-- 🚀 **High Performance**: Optimized with Next.js and Turbopack
-- 🔒 **Type Safety**: End-to-end TypeScript implementation
-- 📊 **Smart Caching**: Efficient data management with TTL-based caching
+This backend service:
+- Fetches and aggregates user posts and comments
+- Implements caching with 5-minute TTL
+- Provides RESTful endpoints for data access
+- Uses TypeScript for type safety
 
 ## Project Structure
 
 ```
-├── frontend/     # Next.js frontend application
-├── Backend/      # Express.js backend service
-└── README.md     # Project documentation
+├── src/
+│   ├── controllers/    # Request handlers
+│   │   ├── posts.ts
+│   │   └── users.ts
+│   ├── services/      # Business logic & external API calls
+│   │   ├── api.ts     # Evaluation service client
+│   │   └── cache.ts   # In-memory cache implementation
+│   ├── routes/        # API route definitions
+│   │   ├── posts.ts
+│   │   └── users.ts
+│   ├── data/         # Data models & storage
+│   │   └── raw_data.json
+│   ├── app.ts        # Express app setup
+│   └── server.ts     # Server entry point
+├── dist/            # Compiled JavaScript output
+└── node_modules/    # Dependencies
 ```
 
-## Screenshots
+## API Endpoints
 
-| Dashboard | Mobile View | Dark Mode |
-|-----------|------------|-----------|
-| ![Dashboard](public/screenshots/dashboard.png) | ![Mobile](public/screenshots/mobile.png) | ![Dark Mode](public/screenshots/dark-mode.png) |
+- `GET /users` - Returns top 5 users by comment count
+- `GET /posts?type=popular` - Returns posts with highest comments
+- `GET /posts?type=latest` - Returns 5 most recent posts
+- `GET /health` - Service health check
 
-## Tech Stack
+## Key Features
 
-### Frontend
-- Next.js 15.3
-- React 19.0
-- TanStack Query (React Query)
-- Tailwind CSS
-- TypeScript
+1. **Intelligent Caching**
+   - Initial data load on server start
+   - 5-minute TTL for cached data
+   - Fallback to cached data during API failures
 
-### Backend
-- Express.js
-- Node.js
-- TypeScript
-- In-memory caching
+2. **Error Handling**
+   - Graceful degradation with cached data
+   - Detailed error logging
+   - User-friendly error messages
+
+3. **Type Safety**
+   - Full TypeScript implementation
+   - Interface definitions for all data structures
 
 ## Getting Started
 
-### Prerequisites
+1. **Prerequisites**
+   - Node.js (v14+)
+   - Yarn package manager
 
-- Node.js (v14 or higher)
-- Yarn package manager
+2. **Installation**
+   ```bash
+   yarn install
+   ```
 
-### Quick Start
+3. **Development**
+   ```bash
+   yarn dev     # Start development server
+   yarn build   # Build for production
+   yarn start   # Run production server
+   ```
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/social-media-aggregator.git
-cd social-media-aggregator
+## Environment Variables
+
+Create `.env` file in project root:
+```
+PORT=3001
+NODE_ENV=development
 ```
 
-2. Install dependencies:
-```bash
-# Frontend
-cd frontend && yarn install
+## Docker Support
 
-# Backend
-cd ../Backend && yarn install
+```bash
+# Build image
+docker build -t social-media-backend .
+
+# Run container
+docker run -p 3001:3001 social-media-backend
 ```
 
-3. Set up environment variables:
-```bash
-# Frontend
-cp frontend/.env.example frontend/.env.local
+## Error Handling
 
-# Backend
-cp Backend/.env.example Backend/.env
-```
+The service implements a robust error handling strategy:
+- API timeouts: Returns cached data
+- Service unavailable: 503 response with clear message
+- Invalid requests: 400 response with validation details
 
-4. Start development servers:
-```bash
-# Backend
-cd Backend && yarn dev
+## Caching Strategy
 
-# Frontend (in a new terminal)
-cd frontend && yarn dev
-```
+- Initial cache population on server start
+- 5-minute TTL for all cached data
+- Automatic cache invalidation
+- File-based backup for cached data
 
-## Performance Metrics
+## Performance Considerations
 
-- **Lighthouse Score**: 98/100
-- **First Contentful Paint**: 0.8s
-- **Time to Interactive**: 1.2s
-- **Core Web Vitals**: All metrics in the green
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+- Minimized API calls through caching
+- Batch data loading at startup
+- Rate limiting for external API calls
+- Efficient memory usage with TTL-based cleanup
