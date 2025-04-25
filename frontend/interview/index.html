@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temp Converter</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <div>
+            <h1 class="Main">Temp Converter</h1>
+        </div>
+        <div>
+            <form >
+                <div class="maintitle">
+                    <label class="title" for="temp">Temparature</label>
+                    <input class="tnum"  type="number" name="temp" placeholder="Enter The value">
+                </div>  
+                <div class="fromunit">
+                    <label class="dropdowntitle funit" for="unit"> From Unit</label>
+                    <select class="dropdown" name="unit">
+                        <option value="F">Fahrenheit (F)</option>
+                        <option value="c"> Celsius (c)</option>
+                        <option value="K">kelvin (K)</option>
+                    </select>
+
+                </div>
+                <div class="tounit">
+                    <label class="dropdowntitle tunit" for="unit">To Unit </label>
+                    <select class="dropdown" name="unit">
+                        <option value="F">Fahrenheuit (F)</option>
+                        <option value="c"> Celsius (c)</option>
+                        <option value="K">kelvin (K)</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="submit" type="submit">Convert</button>
+                </div>
+                <div>
+                    <p class="result"> Result : </p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script src="./script.js"></script>
+    
+</body>
+</html>
